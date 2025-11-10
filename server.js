@@ -5,13 +5,13 @@ import bodyParser from "body-parser";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000; // ✅ Porta adaptável (Render e local)
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// Pegando a chave da API do ambiente
+// ✅ Pegando a chave da API do ambiente
 const apiKey = process.env.GEMINI_API_KEY;
 
 if (!apiKey) {
@@ -19,16 +19,18 @@ if (!apiKey) {
   process.exit(1);
 }
 
+// ✅ Inicializando o modelo Gemini
 const genAI = new GoogleGenerativeAI(apiKey);
-const model = genAI.getGenerativeModel({ model:'gemini-2.5-pro' });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
 
+// ✅ Rota principal
 app.post("/analisar", async (req, res) => {
   try {
     const dados = req.body;
 
-    // Você pode ajustar a forma como os dados são enviados
     const prompt = `
-      Analise os seguintes dados da caderneta de campo e retorne um relatório, especificando as áreas analisadas geograficamente:
+      Analise os seguintes dados da caderneta de campo e retorne um relatório,
+      especificando as áreas analisadas geograficamente:
       ${JSON.stringify(dados)}
     `;
 
@@ -37,11 +39,12 @@ app.post("/analisar", async (req, res) => {
 
     res.json({ texto: resposta });
   } catch (error) {
-    console.error("Erro ao utilizar o Gemini:", error);
+    console.error("❌ Erro ao utilizar o Gemini:", error);
     res.status(500).json({ erro: "Falha na análise com a IA" });
   }
 });
 
+// ✅ Inicialização do servidor
 app.listen(PORT, () => {
-  console.log(`✅ Servidor rodando em http://localhost:${PORT}`);
+  console.log(`✅ Servidor rodando na porta ${PORT}`);
 });
