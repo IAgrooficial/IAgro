@@ -1,0 +1,2105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IAgro - Versão Sem Imagens</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+	
+	.pest-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%; /* Deixa a imagem redonda */
+            object-fit: cover;  /* Garante que a imagem preencha o espaço sem distorcer */
+            margin-right: 16px; /* Adiciona um espaço entre a imagem e o texto */
+            border: 2px solid #e2e8f0; /* Adiciona uma borda sutil */
+            flex-shrink: 0; /* Impede que a imagem encolha */
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 320px;
+            background-color: #1f2937;
+            color: white;
+            text-align: left;
+            border-radius: 8px;
+            padding: 12px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -160px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1f2937 transparent transparent transparent;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #3b82f6 var(--progress, 0%), #e5e7eb var(--progress, 0%));
+            transition: all 0.3s ease;
+        }
+        
+        .stage-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .stage-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stage-card.selected {
+            transform: scale(1.02);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+        }
+        
+        .pest-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .pest-card:hover {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+        
+        .input-field {
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .floating-label {
+            position: absolute;
+            top: -8px;
+            left: 12px;
+            background: white;
+            padding: 0 4px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b7280;
+        }
+        
+        .data-sync-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .sync-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .sync-pending {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .sync-error {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .device-info {
+            background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);
+            border: 1px solid #81d4fa;
+        }
+        
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .data-source-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        
+        .source-local {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .source-imported {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .source-merged {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 8px;
+            cursor: help;
+        }
+        
+        .pest-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .pest-title {
+            flex: 1;
+        }
+        
+        .beneficial-card {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid #bbf7d0;
+        }
+        
+        .beneficial-card:hover {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border-color: #86efac;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Indicador de Sincronização -->
+    <div id="syncIndicator" class="data-sync-indicator sync-success" style="display: none;">
+        📊 Dados sincronizados
+    </div>
+
+    <!-- Modal de Configuração de Amostragem -->
+    <div id="samplingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-2xl">🌱</span>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Configurar Amostragem</h2>
+                <p class="text-gray-600">Defina o número de pontos para coleta de dados</p>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Número de pontos de amostragem:</label>
+                <input type="number" id="pointCount" min="1" max="20" value="5" 
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-lg font-semibold">
+            </div>
+            
+            <div class="flex gap-3">
+                <button onclick="startSampling()" 
+                        class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                    Iniciar Amostragem
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Mesclagem de Dados -->
+    <div id="mergeModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Mesclar Dados de Diferentes Dispositivos</h3>
+            <div id="mergeContent">
+                <!-- Conteúdo será preenchido dinamicamente -->
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeMergeModal()" class="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors">
+                    Cancelar
+                </button>
+                <button onclick="confirmMerge()" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                    Confirmar Mesclagem
+                </button>
+            </div>
+        </div>
+    </div>
+
+<!-- Modal do Relatório -->
+<!-- Modal do Relatório -->
+<div id="reportModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); padding:40px; overflow-y:auto; z-index:1000;">
+  <div style="background:white; padding:20px; border-radius:10px; max-width:700px; margin:auto; max-height:90vh; overflow-y:auto;">
+
+    <h2>Relatório Consolidado</h2>
+
+    <!-- Conteúdo do relatório -->
+    <div id="reportContent" style="white-space:pre-wrap; margin:15px 0;">
+      <!-- O texto gerado pelo Gemini vai aparecer aqui -->
+    </div>
+
+    <!-- Botões -->
+    <button id="closeReportBtn" style="background:#6c757d; color:white; padding:8px 15px; border:none; cursor:pointer; border-radius:4px;">
+      Fechar
+    </button>
+    <button id="exportReportBtn" style="background:#28a745; color:white; padding:8px 15px; border:none; cursor:pointer; border-radius:4px;">
+      Exportar Relatório
+    </button>
+  </div>
+</div>
+
+
+    <!-- Cabeçalho -->
+    <header class="bg-white shadow-lg border-b-4 border-blue-500">
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">🌱</span>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">IAgro</h1>
+                        <p class="text-gray-600">Sistema integrado para monitoramento de pragas e inimigos naturais</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-500">Versão 3.0 - Sem Imagens</div>
+                    <div class="text-sm text-gray-500" id="lastSync">Última sincronização: Agora</div>
+                    <div class="device-info text-xs p-2 rounded mt-1">
+                        <div>Dispositivo: <span id="deviceId" class="font-mono"></span></div>
+                        <div>Pontos locais: <span id="localPointsCount">0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Barra de Progresso -->
+    <div class="max-w-7xl mx-auto px-4 py-4">
+        <div class="bg-white rounded-lg p-4 shadow-md">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-gray-700" id="progressText">Amostragem não iniciada</span>
+                <span class="text-sm text-gray-500" id="progressPercent">0%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+                <div class="progress-bar h-3 rounded-full" style="--progress: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container Principal -->
+    <div class="max-w-7xl mx-auto px-4 pb-8">
+        <!-- Informações Gerais -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex items-center mb-6">
+                <span class="text-2xl mr-3">ℹ️</span>
+                <h2 class="text-2xl font-bold text-gray-800">Informações Gerais</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="relative">
+                    <input type="date" id="dataColeta" 
+                           class="input-field w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <label class="floating-label">Data da Coleta</label>
+                </div>
+                
+                <div class="relative">
+                    <input type="text" id="nomeMonitor" placeholder=" " 
+                           class="input-field w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <label class="floating-label">Nome do Monitor</label>
+                </div>
+                
+                <div class="relative">
+                    <input type="text" id="propriedade" placeholder=" " 
+                           class="input-field w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <label class="floating-label">Propriedade/Município</label>
+                </div>
+                
+                <div class="relative">
+                    <input type="text" id="cultivar" placeholder=" " 
+                           class="input-field w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <label class="floating-label">Cultivar</label>
+                </div>
+                
+                <div class="relative">
+                    <input type="date" id="dataSemeadura" 
+                           class="input-field w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <label class="floating-label">Data da Semeadura</label>
+                </div>
+                
+                <div class="relative">
+                    <input type="text" id="loteTalhao" placeholder=" " 
+                           class="input-field w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <label class="floating-label">Lote/Talhão</label>
+                </div>
+            </div>
+
+            <!-- Estágio de Desenvolvimento -->
+            <div class="mt-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Estágio de Desenvolvimento</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="stage-card p-4 border-2 border-gray-200 rounded-lg text-center" onclick="selectStage('vegetativo')">
+                        <div class="text-3xl mb-2">🌱</div>
+                        <div class="font-semibold text-gray-800">Vegetativo</div>
+                    </div>
+                    <div class="stage-card p-4 border-2 border-gray-200 rounded-lg text-center" onclick="selectStage('floracao')">
+                        <div class="text-3xl mb-2">🌸</div>
+                        <div class="font-semibold text-gray-800">Floração</div>
+                    </div>
+                    <div class="stage-card p-4 border-2 border-gray-200 rounded-lg text-center" onclick="selectStage('vagens')">
+                        <div class="text-3xl mb-2">🫘</div>
+                        <div class="font-semibold text-gray-800">Desenvolvimento de vagens</div>
+                    </div>
+                    <div class="stage-card p-4 border-2 border-gray-200 rounded-lg text-center" onclick="selectStage('maturacao')">
+                        <div class="text-3xl mb-2">🌾</div>
+                        <div class="font-semibold text-gray-800">Maturação</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coleta de Dados por Ponto -->
+        <div id="dataCollection" class="bg-white rounded-xl shadow-lg p-6 mb-6" style="display: none;">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center">
+                    <span class="text-2xl mr-3">📍</span>
+                    <h2 class="text-2xl font-bold text-gray-800">Coleta de Dados por Ponto</h2>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="gpsStatus" class="flex items-center space-x-2">
+                        <span class="w-3 h-3 bg-red-500 rounded-full"></span>
+                        <span class="text-sm text-gray-600">GPS Indisponível</span>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        Ponto atual: <span id="currentPoint" class="font-semibold">1</span> de <span id="totalPoints" class="font-semibold">5</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <button onclick="addPoint()" 
+                        class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold flex items-center space-x-2">
+                    <span>➕</span>
+                    <span>Adicionar Ponto</span>
+                </button>
+            </div>
+
+            <!-- PRAGAS -->
+            <div class="mb-8">
+                <div class="flex items-center mb-6">
+                    <span class="text-2xl mr-3">🐛</span>
+                    <h3 class="text-xl font-bold text-gray-800">PRAGAS</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Lagarta-da-soja -->
+                    <div class="pest-card p-4 rounded-lg">
+                        <div class="pest-header">
+
+		            <img src="imagens/lagarta_da_soja.jpg" alt="Lagarta-da-soja" class="pest-image">
+
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Lagarta-da-soja</h4>
+                                <p class="text-sm text-gray-600"><em>Anticarsia gemmatalis</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Lagarta-da-soja (Anticarsia gemmatalis)</strong><br>
+                                    É a principal praga da cultura da soja, sendo importante pelo seu potencial de consumo foliar. A fase de lagarta dura, em média, 20 dias, passando por seis estádios de desenvolvimento (instares).<br>
+                                    <strong>Nível de controle:</strong> Antes da floração: 30% de desfolha ou 20 lagartas grandes (>1,5 cm) por metro. Após a floração: 15% de desfolha ou 20 lagartas grandes por metro.<br>
+                                    <strong>Danos:</strong> Desfolha<br>
+                                    <strong>Identificação:</strong> As lagartas medem até 40 mm de comprimento, apresentam coloração que varia do verde-claro ao escuro, com listras brancas ou amareladas no dorso e uma linha branca em cada lado do corpo. Possuem três pares de pernas torácicas e quatro pares de pernas abdominais. Quando tocadas, movimentam-se bruscamente para trás.
+                                </span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Pequena (&lt;1.5cm)</label>
+                                <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                       data-pest="lagarta_soja" data-stage="pequena">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Grande (&gt;1.5cm)</label>
+                                <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                       data-pest="lagarta_soja" data-stage="grande">
+                            </div>
+                        </div>
+                        <div class="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                            ⚠️ Nível de controle: 20 lagartas > 1.5 cm/m
+                        </div>
+                    </div>
+
+                    <!-- Lagarta-falsa-medideira -->
+                    <div class="pest-card p-4 rounded-lg">
+                        <div class="pest-header">
+
+                            <img src="imagens/lagarta_falsa_medideira.JPG" alt="Lagarta-falsa-medideira" class="pest-image">
+
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Lagarta-falsa-medideira</h4>
+                                <p class="text-sm text-gray-600"><em>Chrysodeixis includens</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Lagarta-falsa-medideira (Chrysodeixis includens)</strong><br>
+                                    É uma das principais pragas desfolhadoras da soja. As lagartas se alimentam das folhas, raspando o limbo foliar e deixando as nervuras intactas, o que confere à folha um aspecto rendilhado.<br>
+                                    <strong>Nível de controle:</strong> Antes da floração: 30% de desfolha ou 20 lagartas grandes (>1,5 cm) por metro. Após a floração: 15% de desfolha ou 20 lagartas grandes por metro.<br>
+                                    <strong>Danos:</strong> Desfolha, principalmente em folhas novas.<br>
+                                    <strong>Identificação:</strong> Lagarta de coloração verde-clara, com duas listras brancas longitudinais no dorso e uma linha amarela em cada lado do corpo. Possui três pares de pernas torácicas e dois pares de falsas pernas abdominais, o que a faz se locomover arqueando o corpo.
+                                </span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Pequena (&lt;1.5cm)</label>
+                                <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                       data-pest="lagarta_falsa_medideira" data-stage="pequena">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Grande (&gt;1.5cm)</label>
+                                <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                       data-pest="lagarta_falsa_medideira" data-stage="grande">
+                            </div>
+                        </div>
+                        <div class="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                            ⚠️ Nível de controle: 10 lagartas/m ou 10% de vagens danificadas
+                        </div>
+                    </div>
+
+                    <!-- Lagarta-das-vagens -->
+                    <div class="pest-card p-4 rounded-lg">
+                        <div class="pest-header">
+
+                            <img src="imagens/lagarta_das_vagens.jpeg" alt="Lagarta-das-vagens" class="pest-image">
+
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Lagarta-das-vagens</h4>
+                                <p class="text-sm text-gray-600"><em>Spodoptera spp.</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Lagarta-das-vagens (Spodoptera spp.)</strong><br>
+                                    Este complexo de lagartas, incluindo espécies como *Spodoptera eridania* e *Spodoptera cosmioides*, é uma praga importante na cultura da soja, especialmente durante o período reprodutivo. As lagartas se alimentam das vagens, causando danos diretos aos grãos.<br>
+                                    <strong>Nível de controle:</strong> 4 lagartas/m no estágio vegetativo; 2 lagartas/m no estágio reprodutivo (Embrapa).<br>
+                                    <strong>Danos:</strong> Perfuração de vagens, consumo de grãos, redução da qualidade e produtividade da soja.<br>
+                                    <strong>Identificação:</strong> As lagartas apresentam coloração variável, geralmente esverdeada ou amarronzada, com listras longitudinais. Possuem hábito noturno e causam danos visíveis nas vagens, como orifícios e grãos roídos.
+                                </span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Pequena (&lt;1.5cm)</label>
+                                <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                       data-pest="lagarta_vagens" data-stage="pequena">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Grande (&gt;1.5cm)</label>
+                                <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                       data-pest="lagarta_vagens" data-stage="grande">
+                            </div>
+                        </div>
+                        <div class="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                            ⚠️ Nível de controle: 4 lagartas/m - vegetativo; 2 lagartas/m - reprodutivo
+                        </div>
+                    </div>
+
+                    <!-- Lagartas do grupo Heliothinae -->
+                    <div class="pest-card p-4 rounded-lg">
+                        <div class="pest-header">
+
+                            <img src="imagens/lagarta_helicoverpa.jpg" alt="Lagarta-helicoverpa" class="pest-image">
+
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Lagartas do grupo Heliothinae</h4>
+                                <p class="text-sm text-gray-600"><em>Helicoverpa spp., Heliothis spp.</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Lagartas do grupo Heliothinae (Helicoverpa spp., Heliothis spp.)</strong><br>
+                                    Este grupo inclui espécies como *Helicoverpa armigera* e *Heliothis virescens*, que são pragas polífagas e podem causar sérios danos à soja, atacando folhas, flores e vagens.<br>
+                                    <strong>Nível de controle:</strong> Desfolhamento: 30% até o florescimento ou 15% após o florescimento. Em vagens: 1 lagarta/m.<br>
+                                    <strong>Danos:</strong> Desfolhamento, perfuração de flores e vagens, consumo de grãos, resultando em perdas de produtividade.<br>
+                                    <strong>Identificação:</strong> As lagartas variam em coloração, mas frequentemente apresentam listras longitudinais. *H. armigera* possui microespinhos na base das cerdas e *H. virescens* tem corpo mais liso. Ambas preferem atacar estruturas reprodutivas.</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Pequena (&lt;1.5cm)</label>
+                                <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                       data-pest="lagarta_heliothinae" data-stage="pequena">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Grande (&gt;1.5cm)</label>
+                                <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                       data-pest="lagarta_heliothinae" data-stage="grande">
+                            </div>
+                        </div>
+                        <div class="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                            ⚠️ Desfolhamento: 30% até o florescimento ou 15% após
+                        </div>
+                    </div>
+
+                    <!-- Percevejo-verde -->
+                    <div class="pest-card p-4 rounded-lg">
+                        <div class="pest-header">
+
+                            <img src="imagens/percevejo_verde.jpg" alt="percevejo-verde" class="pest-image">
+
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Percevejo-verde</h4>
+                                <p class="text-sm text-gray-600"><em>Nezara viridula</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Percevejo-verde (Nezara viridula)</strong><br>
+                                    É uma das espécies de percevejos mais comuns e importantes na cultura da soja. Ataca as vagens e os grãos em desenvolvimento, causando danos diretos à produção.<br>
+                                    <strong>Nível de controle:</strong> Em lavouras destinadas à produção de grãos: 2 percevejos (ninfas de 3º ao 5º instar + adultos) por metro. Em lavouras destinadas à produção de sementes: 1 percevejo (ninfas de 3º ao 5º instar + adultos) por metro.<br>
+                                    <strong>Danos:</strong> Sucção de seiva das vagens e grãos, causando chochamento, enrugamento, má formação e redução do peso dos grãos. Pode também transmitir doenças.<br>
+                                    <strong>Identificação:</strong> Adultos de coloração verde brilhante, formato pentagonal e tamanho médio (cerca de 1,5 cm). Ninfas passam por cinco instares, variando de coloração e padrão de manchas ao longo do desenvolvimento.</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Ninfa (3º-5º instar)</label>
+                                <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                       data-pest="percevejo_verde" data-stage="ninfa">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Adulto</label>
+                                <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                       data-pest="percevejo_verde" data-stage="adulto">
+                            </div>
+                        </div>
+                        <div class="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                            ⚠️ Lavoura Grão: 2 perc./m; Lavoura Semente: 1 perc./m
+                        </div>
+                    </div>
+
+                    <!-- Percevejo-pequeno -->
+                    <div class="pest-card p-4 rounded-lg">
+                        <div class="pest-header">
+
+                            <img src="imagens/percevejo_pequeno.jpeg" alt="percevejo_pequeno" class="pest-image">
+
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Percevejo-pequeno</h4>
+                                <p class="text-sm text-gray-600"><em>Piezodorus guildinii</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Percevejo-pequeno (Piezodorus guildinii)</strong><br>
+                                    Também conhecido como percevejo-verde-pequeno, é uma praga sugadora que ataca as vagens e grãos da soja, causando danos similares aos do percevejo-verde. Sua importância tem crescido em algumas regiões.<br>
+                                    <strong>Nível de controle:</strong> O nível de controle é o mesmo para o complexo de percevejos, ou seja, 2 percevejos (ninfas de 3º ao 5º instar + adultos) por metro em lavouras de grãos e 1 percevejo por metro em lavouras de sementes.<br>
+                                    <strong>Danos:</strong> Sucção de seiva, resultando em grãos chochos, enrugados e manchados, além de poder causar retenção foliar.<br>
+                                    <strong>Identificação:</strong> Adultos são menores que o percevejo-verde, com coloração verde-amarelada e formato mais alongado. Possuem uma mancha escura na parte superior do escutelo.</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Ninfa (3º-5º instar)</label>
+                                <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                       data-pest="percevejo_pequeno" data-stage="ninfa">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Adulto</label>
+                                <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                       data-pest="percevejo_pequeno" data-stage="adulto">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Percevejo-marrom -->
+                    <div class="pest-card p-4 rounded-lg">
+                        <div class="pest-header">
+
+                            <img src="imagens/percevejo_marrom.jpg" alt="percevejo_marrom" class="pest-image">
+
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Percevejo-marrom</h4>
+                                <p class="text-sm text-gray-600"><em>Euschistus heros</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Percevejo-marrom (Euschistus heros)</strong><br>
+                                    É a espécie de percevejo mais abundante e prejudicial à cultura da soja no Brasil. Causa danos diretos aos grãos, comprometendo a qualidade e a produtividade.<br>
+                                    <strong>Nível de controle:</strong> O nível de controle é o mesmo para o complexo de percevejos, ou seja, 2 percevejos (ninfas de 3º ao 5º instar + adultos) por metro em lavouras de grãos e 1 percevejo por metro em lavouras de sementes.<br>
+                                    <strong>Danos:</strong> Sucção de seiva das vagens e grãos, resultando em grãos chochos, enrugados, manchados e com menor teor de óleo. Pode causar retenção foliar e, em ataques severos, a morte da planta.<br>
+                                    <strong>Identificação:</strong> Adultos de coloração marrom-escura, formato robusto e espinhos laterais proeminentes no tórax. Possuem cerca de 1,5 a 2 cm de comprimento. Ninfas são de coloração mais clara, com manchas escuras.</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Ninfa (3º-5º instar)</label>
+                                <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                       data-pest="percevejo_marrom" data-stage="ninfa">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Adulto</label>
+                                <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                       data-pest="percevejo_marrom" data-stage="adulto">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Percevejo-barriga-verde -->
+                    <div class="pest-card p-4 rounded-lg">
+                        <div class="pest-header">
+
+                            <img src="imagens/percevejo_barriga.jpeg" alt="percevejo_barriga" class="pest-image">
+
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Percevejo-barriga-verde</h4>
+                                <p class="text-sm text-gray-600"><em>Dichelops melacanthus</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Percevejo-barriga-verde (Dichelops melacanthus)</strong><br>
+                                    É uma praga de solo que ataca a soja principalmente no início do desenvolvimento da cultura (estágios de plântula). Pode causar danos severos, levando à morte de plântulas ou perfilhamento.<br>
+                                    <strong>Nível de controle:</strong> Monitoramento intensivo em plantas jovens. O nível de controle varia conforme a região e o histórico da área, mas geralmente é baixo (ex: 1 percevejo/m em algumas situações).<br>
+                                    <strong>Danos:</strong> Corte de plântulas, perfilhamento, redução do estande e da produtividade. Os danos são mais severos em condições de estresse hídrico.<br>
+                                    <strong>Identificação:</strong> Adultos de coloração marrom-escura com abdome de coloração verde-clara (barriga-verde). Possuem espinhos proeminentes na lateral do pronoto. Ninfas são menores e de coloração mais clara.</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Ninfa (3º-5º instar)</label>
+                                <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                       data-pest="percevejo_barriga_verde" data-stage="ninfa">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Adulto</label>
+                                <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                       data-pest="percevejo_barriga_verde" data-stage="adulto">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Broca-dos-ponteiros -->
+                    <div class="pest-card p-4 rounded-lg">
+                        <div class="pest-header">
+
+                            <img src="imagens/broca_ponteiros.jpg" alt="broca-ponteiros" class="pest-image">
+
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Broca-dos-ponteiros</h4>
+                                <p class="text-sm text-gray-600"><em>Crocidosema aporema</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Broca-dos-ponteiros (Crocidosema aporema)</strong><br>
+                                    É uma lagarta que ataca os brotos terminais (ponteiros) da soja, causando a morte do ponto de crescimento e, consequentemente, a bifurcação da haste principal. Os danos são mais significativos em plantas jovens.<br>
+                                    <strong>Nível de controle:</strong> 25% a 30% das plantas com ponteiros atacados.<br>
+                                    <strong>Danos:</strong> Morte do broto terminal, bifurcação da haste, redução do porte da planta e da produtividade.<br>
+                                    <strong>Identificação:</strong> A lagarta é pequena, de coloração esbranquiçada a rosada, e vive protegida dentro do broto. A presença de orifícios e resíduos de excrementos no ponteiro são indicativos de sua presença.</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Nº de Plantas</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                   data-pest="broca_ponteiros" data-stage="plantas">
+                        </div>
+                        <div class="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                            ⚠️ Nível de controle: 25 a 30% das plantas c/ ponteiros atacados
+                        </div>
+                    </div>
+
+                    <!-- Tamanduá-da-soja -->
+                    <div class="pest-card p-4 rounded-lg">
+                        <div class="pest-header">
+
+                            <img src="imagens/tamandua_soja.jpg" alt="tamandua-soja" class="pest-image">
+
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Tamanduá-da-soja</h4>
+                                <p class="text-sm text-gray-600"><em>Sternechus subsignatus</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Tamanduá-da-soja (Sternechus subsignatus)</strong><br>
+                                    É um besouro da família Curculionidae, considerado uma praga importante da soja, especialmente nas fases iniciais de desenvolvimento da cultura. Os adultos se alimentam do caule e pecíolos, e as larvas se desenvolvem dentro do caule e raízes.<br>
+                                    <strong>Nível de controle:</strong> 1 adulto/m (até o estágio V3 da soja).<br>
+                                    <strong>Danos:</strong> Os adultos causam anéis de raspagem no caule e pecíolos, que podem levar à quebra da planta. As larvas, ao se desenvolverem no interior do caule e raízes, causam murcha, amarelecimento e morte das plantas, além de dificultar a colheita.<br>
+                                    <strong>Identificação:</strong> Adultos são besouros pequenos (cerca de 0,5 cm), de coloração escura e com um rostro (tromba) alongado característico. As larvas são brancas, sem pernas e com cabeça marrom, encontradas dentro do caule.</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Adulto</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                   data-pest="tamandua_soja" data-stage="adulto">
+                        </div>
+                        <div class="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                            ⚠️ Nível de controle (até V3): 1 adulto/m
+                        </div>
+                    </div>
+
+                    <!-- Vaquinhas -->
+                    <div class="pest-card p-4 rounded-lg">
+                        <div class="pest-header">
+
+                            <img src="imagens/vaquinhas.jpg" alt="vaquinhas" class="pest-image">
+
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Vaquinhas</h4>
+                                <p class="text-sm text-gray-600"><em>Diabrotica speciosa, Cerotoma spp., Colaspis spp.</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Vaquinhas (Diabrotica speciosa, Cerotoma arcuata, Colaspis spp.)</strong><br>
+                                    Complexo de besouros desfolhadores que atacam a soja em diversas fases, principalmente em plantas jovens.<br>
+                                    <strong>Nível de controle:</strong> 2 adultos/m (do estágio V4 ao V6).<br>
+                                    <strong>Danos:</strong> Desfolhamento, raspagem de folhas, e em ataques severos, podem causar a morte de plântulas.<br>
+                                    <strong>Identificação:</strong> Besouros pequenos, com coloração e padrões variados (ex: *Diabrotica speciosa* é verde-amarelada com pintas pretas; *Cerotoma arcuata* é preta com manchas amarelas).
+                        </div>
+                     </div>
+                     <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Adulto</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                   data-pest="vaquinhas" data-stage="adulto">
+
+                        <div class="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                            ⚠️ Nível de controle (V4-V6): 2 adultos/m
+                        </div>
+                    </div>
+
+                    <!-- Torrãozinho -->
+                    <div class="pest-card p-4 rounded-lg">
+                        <div class="pest-header">
+
+                            <img src="imagens/torraozinho.jpg" alt="torraozinho" class="pest-image">
+
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Torrãozinho</h4>
+                                <p class="text-sm text-gray-600"><em>Aracanthus mourei</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Torrãozinho (Aracanthus mourei)</strong><br>
+                                    É um besouro desfolhador que pode causar danos à soja, principalmente em áreas com histórico de ocorrência. Os adultos se alimentam das folhas, causando perfurações.<br>
+                                    <strong>Nível de controle:</strong> O nível de controle é baseado no percentual de desfolha: 30% até o florescimento ou 15% após o florescimento.<br>
+                                    <strong>Danos:</strong> Desfolhamento das plantas, que pode afetar a capacidade fotossintética e, consequentemente, a produtividade.<br>
+                                    <strong>Identificação:</strong> Adultos são besouros pequenos, de coloração escura e corpo robusto. Geralmente são encontrados nas folhas da soja, onde realizam as perfurações características.
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Adulto</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                   data-pest="torraozinho" data-stage="adulto">
+                        </div>
+                        <div class="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                            ⚠️ Desfolha: 30% até o florescimento ou 15% após
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Outros Insetos -->
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Outros Insetos (Observações)</label>
+                    <textarea class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                              rows="3" placeholder="Descreva outras pragas observadas..."></textarea>
+                </div>
+            </div>
+
+            <!-- INIMIGOS NATURAIS E DOENÇAS -->
+            <div class="mb-8">
+                <div class="flex items-center mb-6">
+                    <span class="text-2xl mr-3">🦸</span>
+                    <h3 class="text-xl font-bold text-gray-800">MONITORAMENTO DOS INIMIGOS NATURAIS E DOENÇAS</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Nomuraea -->
+                    <div class="beneficial-card p-4 rounded-lg">
+                        <div class="pest-header">
+
+                            <img src="imagens/branca.jpg" alt="branca" class="pest-image">
+
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Nomuraea (doença branca)</h4>
+                                <p class="text-sm text-gray-600"><em>Nomuraea rileyi</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Nomuraea (doença branca) - Nomuraea rileyi</strong><br>
+                                    Fungo entomopatogênico que infecta lagartas, causando a 'doença branca'. É um importante agente de controle biológico natural.<br>
+                                    <strong>Benefício:</strong> Controle natural de lagartas desfolhadoras<br>
+                                    <strong>Identificação:</strong> Lagartas mortas com coloração esbranquiçada devido ao crescimento do fungo<br>
+                                    <strong>Condições favoráveis:</strong> Alta umidade e temperatura entre 20-30°C
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Contagem</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                                   data-beneficial="nomuraea" data-stage="contagem">
+                        </div>
+                    </div>
+
+                    <!-- Baculovirus -->
+                    <div class="beneficial-card p-4 rounded-lg">
+                        <div class="pest-header">
+                            <img src="imagens/preta.jpg" alt="preta" class="pest-image">
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Baculovirus (doença preta)</h4>
+                                <p class="text-sm text-gray-600"><em>Baculovirus anticarsia</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Baculovirus (doença preta) - Baculovirus anticarsia</strong><br>
+                                    Vírus que infecta especificamente a lagarta-da-soja, causando a 'doença preta'. Usado em programas de controle biológico.<br>
+                                    <strong>Benefício:</strong> Controle específico da lagarta-da-soja<br>
+                                    <strong>Identificação:</strong> Lagartas mortas com coloração escura, corpo flácido<br>
+                                    <strong>Aplicação:</strong> Pode ser aplicado como bioinseticida
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Contagem</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                                   data-beneficial="baculovirus" data-stage="contagem">
+                        </div>
+                    </div>
+
+                    <!-- Calosoma granulatum -->
+                    <div class="beneficial-card p-4 rounded-lg">
+                        <div class="pest-header">
+                            <img src="imagens/calosoma.jpg" alt="calosoma" class="pest-image">
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Calosoma</h4>
+                                <p class="text-sm text-gray-600"><em>Calosoma granulatum</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Calosoma granulatum</strong><br>
+                                    Besouro predador que se alimenta de lagartas e outros insetos. É um importante inimigo natural das pragas da soja.<br>
+                                    <strong>Benefício:</strong> Predação de lagartas e outras pragas<br>
+                                    <strong>Identificação:</strong> Besouro grande, coloração metálica, movimentos rápidos<br>
+                                    <strong>Comportamento:</strong> Ativo durante o dia, caça ativamente no solo e plantas
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Contagem</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                                   data-beneficial="calosoma" data-stage="contagem">
+                        </div>
+                    </div>
+
+                    <!-- Callida sp. -->
+                    <div class="beneficial-card p-4 rounded-lg">
+                        <div class="pest-header">
+                            <img src="imagens/callida.jpg" alt="callida" class="pest-image">
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Callida</h4>
+                                <p class="text-sm text-gray-600"><em>Callida sp.</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Callida sp.</strong><br>
+                                    Besouro predador que se alimenta de ovos e lagartas pequenas de lepidópteros.<br>
+                                    <strong>Benefício:</strong> Predação de ovos e lagartas jovens<br>
+                                    <strong>Identificação:</strong> Besouro pequeno, coloração alaranjada<br>
+                                    <strong>Comportamento:</strong> Ativo na superfície das plantas, especialista em ovos
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Contagem</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                                   data-beneficial="callida_sp" data-stage="contagem">
+                        </div>
+                    </div>
+
+                    <!-- Callida scutellaris -->
+                    <div class="beneficial-card p-4 rounded-lg">
+                        <div class="pest-header">
+                            <img src="imagens/Callidio.jpg" alt="callidio" class="pest-image">
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Callida-scutellaris</h4>
+                                <p class="text-sm text-gray-600"><em>Callida scutellaris</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Callida scutellaris</strong><br>
+                                    Espécie específica de Callida, importante predador de ovos e lagartas pequenas.<br>
+                                    <strong>Benefício:</strong> Predação especializada de ovos e lagartas<br>
+                                    <strong>Identificação:</strong> Similar à Callida sp., mas com características específicas<br>
+                                    <strong>Eficiência:</strong> Alta capacidade de localizar e consumir ovos de pragas
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Contagem</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                                   data-beneficial="callida_scutellaris" data-stage="contagem">
+                        </div>
+                    </div>
+
+                    <!-- Lebia concinna -->
+                    <div class="beneficial-card p-4 rounded-lg">
+                        <div class="pest-header">
+                            <img src="imagens/lebia.jpeg" alt="lebia" class="pest-image">
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Lebia</h4>
+                                <p class="text-sm text-gray-600"><em>Lebia concinna</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Lebia concinna</strong><br>
+                                    Besouro predador que se alimenta de ovos e lagartas pequenas.<br>
+                                    <strong>Benefício:</strong> Controle de pragas em estágios iniciais<br>
+                                    <strong>Identificação:</strong> Besouro pequeno, ativo na superfície das plantas<br>
+                                    <strong>Habitat:</strong> Encontrado principalmente nas folhas e estruturas da planta
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Contagem</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                                   data-beneficial="lebia_concinna" data-stage="contagem">
+                        </div>
+                    </div>
+
+                    <!-- Eriopsis connexa -->
+                    <div class="beneficial-card p-4 rounded-lg">
+                        <div class="pest-header">
+                            <img src="imagens/joaninha.jpeg" alt="joaninha" class="pest-image">
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Joaninha</h4>
+                                <p class="text-sm text-gray-600"><em>Eriopsis connexa</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Joaninha (Eriopsis connexa)</strong><br>
+                                    Joaninha predadora que se alimenta principalmente de pulgões, mas também de outros insetos pequenos.<br>
+                                    <strong>Benefício:</strong> Controle de pulgões e pequenos insetos<br>
+                                    <strong>Identificação:</strong> Joaninha de coloração alaranjada com pontos pretos<br>
+                                    <strong>Capacidade:</strong> Pode consumir até 50 pulgões por dia
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Contagem</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                                   data-beneficial="eriopsis_connexa" data-stage="contagem">
+                        </div>
+                    </div>
+
+                    <!-- Cycloneda sanguinea -->
+                    <div class="beneficial-card p-4 rounded-lg">
+                        <div class="pest-header">
+                            <img src="imagens/cycloneda.jpg" alt="cycloneda" class="pest-image">
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Joaninha-vermelha</h4>
+                                <p class="text-sm text-gray-600"><em>Cycloneda sanguinea</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Joaninha-vermelha (Cycloneda sanguinea)</strong><br>
+                                    Joaninha predadora de coloração vermelha, importante no controle de pulgões.<br>
+                                    <strong>Benefício:</strong> Predação de pulgões e pequenos insetos<br>
+                                    <strong>Identificação:</strong> Joaninha vermelha, sem pontos ou com poucos pontos<br>
+                                    <strong>Distribuição:</strong> Amplamente distribuída, muito comum na soja
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Contagem</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                                   data-beneficial="cycloneda_sanguinea" data-stage="contagem">
+                        </div>
+                    </div>
+
+                    <!-- Podisus sp. -->
+                    <div class="beneficial-card p-4 rounded-lg">
+                        <div class="pest-header">
+                            <img src="imagens/podisus.jpeg" alt="podisus" class="pest-image">
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Percevejo-predador</h4>
+                                <p class="text-sm text-gray-600"><em>Podisus sp.</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Percevejo-predador (Podisus sp.)</strong><br>
+                                    Percevejo predador que se alimenta de lagartas e outros insetos. Importante agente de controle biológico.<br>
+                                    <strong>Benefício:</strong> Predação de lagartas e outras pragas<br>
+                                    <strong>Identificação:</strong> Percevejo robusto, rostro adaptado para predação<br>
+                                    <strong>Comportamento:</strong> Injeta enzimas digestivas nas presas, sugando o conteúdo
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Contagem</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                                   data-beneficial="podisus_sp" data-stage="contagem">
+                        </div>
+                    </div>
+
+                    <!-- Tropiconabis sp. -->
+                    <div class="beneficial-card p-4 rounded-lg">
+                        <div class="pest-header">
+                            <img src="imagens/tropicanabis.jpeg" alt="tropicanabis" class="pest-image">
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Tropiconabis</h4>
+                                <p class="text-sm text-gray-600"><em>Tropiconabis sp.</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Tropiconabis sp.</strong><br>
+                                    Percevejo predador que se alimenta de pequenos insetos e ovos.<br>
+                                    <strong>Benefício:</strong> Controle de pragas em estágios iniciais<br>
+                                    <strong>Identificação:</strong> Percevejo pequeno, coloração variável<br>
+                                    <strong>Especialidade:</strong> Eficiente na predação de ovos e insetos jovens
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Contagem</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                                   data-beneficial="tropiconabis_sp" data-stage="contagem">
+                        </div>
+                    </div>
+
+                    <!-- Geocoris sp. -->
+                    <div class="beneficial-card p-4 rounded-lg">
+                        <div class="pest-header">
+                            <img src="imagens/Geocoris.jpg" alt="geocoris" class="pest-image">
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Geocoris</h4>
+                                <p class="text-sm text-gray-600"><em>Geocoris sp.</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Geocoris sp.</strong><br>
+                                    Percevejo predador que se alimenta de ovos e pequenos insetos.<br>
+                                    <strong>Benefício:</strong> Predação de ovos e insetos pequenos<br>
+                                    <strong>Identificação:</strong> Percevejo pequeno, olhos proeminentes<br>
+                                    <strong>Habitat:</strong> Encontrado no solo e na base das plantas
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Contagem</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                                   data-beneficial="geocoris_sp" data-stage="contagem">
+                        </div>
+                    </div>
+
+                    <!-- Doru sp. (tesourinha) -->
+                    <div class="beneficial-card p-4 rounded-lg">
+                        <div class="pest-header">
+                            <img src="imagens/tesoura.jpeg" alt="tesoura" class="pest-image">
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Tesourinha</h4>
+                                <p class="text-sm text-gray-600"><em>Doru sp.</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Tesourinha (Doru sp.)</strong><br>
+                                    Inseto predador com fórceps no abdome, alimenta-se de ovos e lagartas pequenas.<br>
+                                    <strong>Benefício:</strong> Predação de ovos e lagartas jovens<br>
+                                    <strong>Identificação:</strong> Inseto alongado com fórceps característicos no abdome<br>
+                                    <strong>Comportamento:</strong> Ativo durante a noite, esconde-se durante o dia
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Contagem</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                                   data-beneficial="doru_sp" data-stage="contagem">
+                        </div>
+                    </div>
+
+                    <!-- Aranhas -->
+                    <div class="beneficial-card p-4 rounded-lg">
+                        <div class="pest-header">
+                            <img src="imagens/aranhas.jpeg" alt="aranhas" class="pest-image">
+                            <div class="pest-title">
+                                <h4 class="font-semibold text-gray-800">Aranhas</h4>
+                                <p class="text-sm text-gray-600"><em>Várias famílias</em></p>
+                            </div>
+                            <div class="tooltip">
+                                <div class="info-icon">i</div>
+                                <span class="tooltiptext">
+                                    <strong>Aranhas (Várias famílias)</strong><br>
+                                    Predadores generalistas que capturam diversos tipos de insetos através de teias ou caça ativa.<br>
+                                    <strong>Benefício:</strong> Controle geral de insetos pragas<br>
+                                    <strong>Identificação:</strong> Aracnídeos com oito patas, diversos tamanhos e cores<br>
+                                    <strong>Estratégias:</strong> Teias, caça ativa, emboscada
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Contagem</label>
+                            <input type="number" min="0" class="pest-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                                   data-beneficial="aranhas" data-stage="contagem">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Outros Inimigos Naturais -->
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Outros Inimigos Naturais (Observações)</label>
+                    <textarea class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                              rows="3" placeholder="Descreva outros inimigos naturais observados..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exportar Dados -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center mb-6">
+                <span class="text-2xl mr-3">📊</span>
+                <h2 class="text-2xl font-bold text-gray-800">Gerenciamento de Dados</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <button onclick="exportCSV()" 
+                        class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center justify-center space-x-2">
+                    <span>📄</span>
+                    <span>Exportar CSV</span>
+                </button>
+                
+                <button onclick="exportJSON()" 
+                        class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold flex items-center justify-center space-x-2">
+                    <span>📋</span>
+                    <span>Exportar JSON</span>
+                </button>
+                
+                <button onclick="importData()" 
+                        class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-semibold flex items-center justify-center space-x-2">
+                    <span>📥</span>
+                    <span>Importar/Mesclar</span>
+                </button>
+                
+                <button onclick="generateConsolidatedReport()" 
+                        class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-semibold flex items-center justify-center space-x-2">
+                    <span>📈</span>
+                    <span>Relatório Consolidado</span>
+                </button>
+                
+                <button onclick="syncWithCloud()" 
+                        class="bg-cyan-600 text-white px-6 py-3 rounded-lg hover:bg-cyan-700 transition-colors font-semibold flex items-center justify-center space-x-2">
+                    <span>☁️</span>
+                    <span>Sincronizar Nuvem</span>
+                </button>
+                
+                <button onclick="clearData()" 
+                        class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center justify-center space-x-2">
+                    <span>🗑️</span>
+                    <span>Limpar Dados</span>
+                </button>
+            </div>
+            
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleFileImport(event)">
+            
+            <div class="text-sm text-gray-600 bg-gray-50 p-4 rounded-lg">
+                <p class="mb-2"><strong>💾 Armazenamento automático:</strong> Os dados são salvos automaticamente no seu navegador</p>
+                <p class="mb-2"><strong>🔄 Sincronização multi-dispositivo:</strong> Use a função de importar/mesclar para combinar dados de diferentes dispositivos</p>
+                <p class="mb-2"><strong>📊 Relatórios consolidados:</strong> Gere relatórios que combinam dados de múltiplas coletas</p>
+                <p class="mb-2"><strong>ℹ️ Informações detalhadas:</strong> Passe o mouse sobre os ícones "i" para ver informações detalhadas sobre cada praga/inimigo natural</p>
+                <p><strong>📱 Compatibilidade:</strong> Funciona em computadores, tablets e smartphones</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variáveis globais
+        let samplingData = {
+            deviceId: generateDeviceId(),
+            generalInfo: {},
+            points: [],
+            currentPoint: 0,
+            totalPoints: 5,
+            stage: '',
+            metadata: {
+                version: '3.0-sem-imagens',
+                created: new Date().toISOString(),
+                lastModified: new Date().toISOString()
+            }
+        };
+
+        let gpsAvailable = false;
+        let pendingMergeData = null;
+
+        const serverUrl = 'http://localhost:3000';
+
+
+        // Gerar ID único do dispositivo
+        function generateDeviceId() {
+            let deviceId = localStorage.getItem('mipSojaDeviceId');
+            if (!deviceId) {
+                deviceId = 'DEV_' + Math.random().toString(36).substr(2, 9).toUpperCase();
+                localStorage.setItem('mipSojaDeviceId', deviceId);
+            }
+            return deviceId;
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            // Definir data atual
+            document.getElementById('dataColeta').value = new Date().toISOString().split('T')[0];
+            
+            // Mostrar ID do dispositivo
+            document.getElementById('deviceId').textContent = samplingData.deviceId;
+            
+            // Verificar GPS
+            checkGPSAvailability();
+            
+            // Carregar dados salvos
+            loadSavedData();
+            
+            // Configurar listeners para auto-save
+            setupAutoSave();
+            
+            // Atualizar contador de pontos locais
+            updateLocalPointsCount();
+        });
+
+        // Verificar disponibilidade do GPS
+        function checkGPSAvailability() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        gpsAvailable = true;
+                        updateGPSStatus('available');
+                    },
+                    function(error) {
+                        gpsAvailable = false;
+                        updateGPSStatus('denied');
+                    }
+                );
+            } else {
+                gpsAvailable = false;
+                updateGPSStatus('unavailable');
+            }
+        }
+
+        // Atualizar status do GPS
+        function updateGPSStatus(status) {
+            const gpsStatus = document.getElementById('gpsStatus');
+            const statusElement = gpsStatus.querySelector('span:first-child');
+            const textElement = gpsStatus.querySelector('span:last-child');
+            
+            switch(status) {
+                case 'available':
+                    statusElement.className = 'w-3 h-3 bg-green-500 rounded-full';
+                    textElement.textContent = 'GPS Disponível';
+                    break;
+                case 'denied':
+                    statusElement.className = 'w-3 h-3 bg-red-500 rounded-full';
+                    textElement.textContent = 'GPS Negado';
+                    break;
+                case 'unavailable':
+                    statusElement.className = 'w-3 h-3 bg-gray-500 rounded-full';
+                    textElement.textContent = 'GPS Indisponível';
+                    break;
+            }
+        }
+
+        // Atualizar contador de pontos locais
+        function updateLocalPointsCount() {
+            document.getElementById('localPointsCount').textContent = samplingData.points.length;
+        }
+
+        // Iniciar amostragem
+        function startSampling() {
+            const pointCount = parseInt(document.getElementById('pointCount').value);
+            if (pointCount < 1 || pointCount > 20) {
+                alert('Por favor, insira um número válido de pontos (1-20)');
+                return;
+            }
+            
+            samplingData.totalPoints = pointCount;
+            samplingData.currentPoint = 1;
+            samplingData.points = [];
+            
+            document.getElementById('totalPoints').textContent = pointCount;
+            document.getElementById('currentPoint').textContent = '1';
+            
+            document.getElementById('samplingModal').style.display = 'none';
+            document.getElementById('dataCollection').style.display = 'block';
+            
+            updateProgress();
+        }
+
+        // Selecionar estágio de desenvolvimento
+        function selectStage(stage) {
+            // Remover seleção anterior
+            document.querySelectorAll('.stage-card').forEach(card => {
+                card.classList.remove('selected');
+                card.style.borderColor = '#e5e7eb';
+            });
+            
+            // Adicionar seleção atual
+            event.target.closest('.stage-card').classList.add('selected');
+            event.target.closest('.stage-card').style.borderColor = '#3b82f6';
+            
+            samplingData.stage = stage;
+            saveData();
+        }
+
+        // Adicionar ponto
+        function addPoint() {
+            if (samplingData.currentPoint > samplingData.totalPoints) {
+                alert('Todos os pontos já foram coletados!');
+                return;
+            }
+            
+            // Coletar dados do formulário
+            const pointData = collectCurrentPointData();
+            
+            // Tentar obter coordenadas GPS
+            if (gpsAvailable) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        pointData.coordinates = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            accuracy: position.coords.accuracy,
+                            timestamp: new Date().toISOString()
+                        };
+                        
+                        savePointAndAdvance(pointData);
+                    },
+                    function(error) {
+                        pointData.coordinates = {
+                            error: 'Erro ao obter coordenadas: ' + error.message,
+                            timestamp: new Date().toISOString()
+                        };
+                        
+                        savePointAndAdvance(pointData);
+                    }
+                );
+            } else {
+                pointData.coordinates = {
+                    error: 'GPS não disponível',
+                    timestamp: new Date().toISOString()
+                };
+                
+                savePointAndAdvance(pointData);
+            }
+        }
+
+        // Coletar dados do ponto atual
+        function collectCurrentPointData() {
+            const pointData = {
+                pointNumber: samplingData.currentPoint,
+                deviceId: samplingData.deviceId,
+                timestamp: new Date().toISOString(),
+                generalInfo: collectGeneralInfo(),
+                pests: {},
+                beneficials: {},
+                observations: {
+                    pests: document.querySelector('textarea[placeholder*="outras pragas"]')?.value || '',
+                    beneficials: document.querySelector('textarea[placeholder*="outros inimigos"]')?.value || ''
+                },
+                dataSource: 'local'
+            };
+            
+            // Coletar dados de pragas
+            document.querySelectorAll('.pest-input[data-pest]').forEach(input => {
+                const pest = input.dataset.pest;
+                const stage = input.dataset.stage;
+                const value = parseInt(input.value) || 0;
+                
+                if (!pointData.pests[pest]) {
+                    pointData.pests[pest] = {};
+                }
+                pointData.pests[pest][stage] = value;
+            });
+            
+            // Coletar dados de inimigos naturais
+            document.querySelectorAll('.pest-input[data-beneficial]').forEach(input => {
+                const beneficial = input.dataset.beneficial;
+                const stage = input.dataset.stage;
+                const value = parseInt(input.value) || 0;
+                
+                if (!pointData.beneficials[beneficial]) {
+                    pointData.beneficials[beneficial] = {};
+                }
+                pointData.beneficials[beneficial][stage] = value;
+            });
+            
+            return pointData;
+        }
+
+        // Coletar informações gerais
+        function collectGeneralInfo() {
+            return {
+                dataColeta: document.getElementById('dataColeta').value,
+                nomeMonitor: document.getElementById('nomeMonitor').value,
+                propriedade: document.getElementById('propriedade').value,
+                cultivar: document.getElementById('cultivar').value,
+                dataSemeadura: document.getElementById('dataSemeadura').value,
+                loteTalhao: document.getElementById('loteTalhao').value,
+                estagio: samplingData.stage
+            };
+        }
+
+        // Salvar ponto e avançar
+        function savePointAndAdvance(pointData) {
+            samplingData.points.push(pointData);
+            
+            // Limpar campos para próximo ponto
+            clearPointInputs();
+            
+            // Avançar para próximo ponto
+            if (samplingData.currentPoint <= samplingData.totalPoints) {
+                samplingData.currentPoint++;
+                document.getElementById('currentPoint').textContent = samplingData.currentPoint;
+            }
+            
+            updateProgress();
+            updateLocalPointsCount();
+            saveData();
+            showSyncIndicator('success');
+        }
+
+        // Limpar campos do ponto
+        function clearPointInputs() {
+            document.querySelectorAll('.pest-input').forEach(input => {
+                input.value = '';
+            });
+            
+            document.querySelectorAll('textarea').forEach(textarea => {
+                if (textarea.placeholder.includes('outras') || textarea.placeholder.includes('outros')) {
+                    textarea.value = '';
+                }
+            });
+        }
+
+        // Atualizar barra de progresso
+        function updateProgress() {
+            const progress = (samplingData.currentPoint - 1) / samplingData.totalPoints * 100;
+            const progressBar = document.querySelector('.progress-bar');
+            const progressText = document.getElementById('progressText');
+            const progressPercent = document.getElementById('progressPercent');
+            
+            progressBar.style.setProperty('--progress', progress + '%');
+            progressText.textContent = `Ponto ${samplingData.currentPoint} de ${samplingData.totalPoints}`;
+            progressPercent.textContent = Math.round(progress) + '%';
+            
+            if (progress === 100) {
+                progressText.textContent = 'Amostragem concluída!';
+            }
+        }
+
+        // Configurar auto-save
+        function setupAutoSave() {
+            // Auto-save em mudanças nos campos
+            document.querySelectorAll('input, textarea, select').forEach(element => {
+                element.addEventListener('change', saveData);
+                element.addEventListener('input', debounce(saveData, 1000));
+            });
+        }
+
+        // Debounce function
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Salvar dados
+        function saveData() {
+            samplingData.generalInfo = collectGeneralInfo();
+            samplingData.metadata.lastModified = new Date().toISOString();
+            localStorage.setItem('mipSojaDataSemImagens', JSON.stringify(samplingData));
+            document.getElementById('lastSync').textContent = 'Última sincronização: ' + new Date().toLocaleTimeString();
+        }
+
+        // Carregar dados salvos
+        function loadSavedData() {
+            const savedData = localStorage.getItem('mipSojaDataSemImagens');
+            if (savedData) {
+                try {
+                    const parsedData = JSON.parse(savedData);
+                    
+                    // Manter deviceId atual se não existir nos dados salvos
+                    if (!parsedData.deviceId) {
+                        parsedData.deviceId = samplingData.deviceId;
+                    }
+                    
+                    samplingData = parsedData;
+                    
+                    // Restaurar informações gerais
+                    if (samplingData.generalInfo) {
+                        Object.keys(samplingData.generalInfo).forEach(key => {
+                            const element = document.getElementById(key);
+                            if (element) {
+                                element.value = samplingData.generalInfo[key];
+                            }
+                        });
+                    }
+                    
+                    // Restaurar estado da amostragem
+                    if (samplingData.totalPoints && samplingData.currentPoint) {
+                        document.getElementById('totalPoints').textContent = samplingData.totalPoints;
+                        document.getElementById('currentPoint').textContent = samplingData.currentPoint;
+                        document.getElementById('dataCollection').style.display = 'block';
+                        document.getElementById('samplingModal').style.display = 'none';
+                        updateProgress();
+                    }
+                    
+                    updateLocalPointsCount();
+                    
+                } catch (error) {
+                    console.error('Erro ao carregar dados salvos:', error);
+                }
+            }
+        }
+
+        // Mostrar indicador de sincronização
+        function showSyncIndicator(type) {
+            const indicator = document.getElementById('syncIndicator');
+            indicator.className = `data-sync-indicator sync-${type}`;
+            
+            switch(type) {
+                case 'success':
+                    indicator.textContent = '✅ Dados salvos';
+                    break;
+                case 'pending':
+                    indicator.textContent = '⏳ Salvando...';
+                    break;
+                case 'error':
+                    indicator.textContent = '❌ Erro ao salvar';
+                    break;
+            }
+            
+            indicator.style.display = 'block';
+            setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 3000);
+        }
+
+        // Exportar para CSV
+        function exportCSV() {
+    if (samplingData.points.length === 0) {
+        alert('Nenhum dado para exportar. Adicione pelo menos um ponto de amostragem.');
+        return;
+    }
+
+    // 1. Criamos uma lista que vai armazenar todas as nossas linhas
+    const rows = [];
+
+    // 2. Definimos todos os cabeçalhos de uma vez em uma lista
+    const headers = [
+        'Ponto', 'Dispositivo', 'Data/Hora', 'Latitude', 'Longitude', 'Monitor', 'Propriedade', 'Cultivar', 'Estagio', 'Fonte',
+        'Lagarta_soja_pequena', 'Lagarta_soja_grande',
+        'Lagarta_falsa_medideira_pequena', 'Lagarta_falsa_medideira_grande',
+        'Lagarta_vagens_pequena', 'Lagarta_vagens_grande',
+        'Lagarta_heliothinae_pequena', 'Lagarta_heliothinae_grande',
+        'Percevejo_verde_ninfa', 'Percevejo_verde_adulto',
+        'Percevejo_pequeno_ninfa', 'Percevejo_pequeno_adulto',
+        'Percevejo_marrom_ninfa', 'Percevejo_marrom_adulto',
+        'Percevejo_barriga_verde_ninfa', 'Percevejo_barriga_verde_adulto',
+        'Broca_ponteiros_plantas', 'Tamandua_soja_adulto',
+        'Vaquinhas_adulto', 'Torraozinho_adulto',
+        'Nomuraea', 'Baculovirus', 'Calosoma', 'Callida_sp', 'Callida_scutellaris',
+        'Lebia_concinna', 'Eriopsis_connexa', 'Cycloneda_sanguinea',
+        'Podisus_sp', 'Tropiconabis_sp', 'Geocoris_sp', 'Doru_sp', 'Aranhas',
+        'Observacoes_pragas', 'Observacoes_inimigos'
+    ];
+    
+    // Adicionamos a linha de cabeçalho à nossa lista de linhas
+    rows.push(headers.join(','));
+
+    // 3. Agora, iteramos sobre cada ponto de coleta para criar as linhas de dados
+    samplingData.points.forEach(point => {
+        // Mapeamos os cabeçalhos para os valores correspondentes no ponto
+        const rowData = [
+            point.pointNumber,
+            point.deviceId || samplingData.deviceId,
+            point.timestamp,
+            point.coordinates?.latitude || '',
+            point.coordinates?.longitude || '',
+            point.generalInfo?.nomeMonitor || '',
+            point.generalInfo?.propriedade || '',
+            point.generalInfo?.cultivar || '',
+            point.generalInfo?.estagio || '',
+            point.dataSource || 'local',
+            // Pragas
+            point.pests?.lagarta_soja?.pequena || 0, point.pests?.lagarta_soja?.grande || 0,
+            point.pests?.lagarta_falsa_medideira?.pequena || 0, point.pests?.lagarta_falsa_medideira?.grande || 0,
+            point.pests?.lagarta_vagens?.pequena || 0, point.pests?.lagarta_vagens?.grande || 0,
+            point.pests?.lagarta_heliothinae?.pequena || 0, point.pests?.lagarta_heliothinae?.grande || 0,
+            point.pests?.percevejo_verde?.ninfa || 0, point.pests?.percevejo_verde?.adulto || 0,
+            point.pests?.percevejo_pequeno?.ninfa || 0, point.pests?.percevejo_pequeno?.adulto || 0,
+            point.pests?.percevejo_marrom?.ninfa || 0, point.pests?.percevejo_marrom?.adulto || 0,
+            point.pests?.percevejo_barriga_verde?.ninfa || 0, point.pests?.percevejo_barriga_verde?.adulto || 0,
+            point.pests?.broca_ponteiros?.plantas || 0,
+            point.pests?.tamandua_soja?.adulto || 0,
+            point.pests?.vaquinhas?.adulto || 0,
+            point.pests?.torraozinho?.adulto || 0,
+            // Inimigos Naturais
+            point.beneficials?.nomuraea?.contagem || 0,
+            point.beneficials?.baculovirus?.contagem || 0,
+            point.beneficials?.calosoma?.contagem || 0,
+            point.beneficials?.callida_sp?.contagem || 0,
+            point.beneficials?.callida_scutellaris?.contagem || 0,
+            point.beneficials?.lebia_concinna?.contagem || 0,
+            point.beneficials?.eriopsis_connexa?.contagem || 0,
+            point.beneficials?.cycloneda_sanguinea?.contagem || 0,
+            point.beneficials?.podisus_sp?.contagem || 0,
+            point.beneficials?.tropiconabis_sp?.contagem || 0,
+            point.beneficials?.geocoris_sp?.contagem || 0,
+            point.beneficials?.doru_sp?.contagem || 0,
+            point.beneficials?.aranhas?.contagem || 0,
+            // Observações (garantindo que as aspas sejam tratadas corretamente)
+            `"${(point.observations?.pests || '').replace(/"/g, '""')}"`,
+            `"${(point.observations?.beneficials || '').replace(/"/g, '""')}"`
+        ];
+        
+        // Adicionamos a linha de dados formatada à nossa lista de linhas
+        rows.push(rowData.join(','));
+    });
+
+    // 4. Juntamos todas as linhas (cabeçalho + dados) com a quebra de linha correta
+    const csvContent = rows.join('\r\n');
+
+    // 5. Criamos e disparamos o download do arquivo
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `IAgro_sem_imagens_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showSyncIndicator('success');
+}
+            
+           
+        // Exportar para JSON
+        function exportJSON() {
+            if (samplingData.points.length === 0) {
+                alert('Nenhum dado para exportar. Adicione pelo menos um ponto de amostragem.');
+                return;
+            }
+            
+            const dataToExport = {
+                ...samplingData,
+                exportDate: new Date().toISOString(),
+                version: '3.0-sem-imagens'
+            };
+            
+            const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `IAgro_sem_imagens_${samplingData.deviceId}_${new Date().toISOString().split('T')[0]}.json`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showSyncIndicator('success');
+        }
+
+        // Importar dados
+        function importData() {
+            document.getElementById('importFile').click();
+        }
+
+        // Manipular importação de arquivo
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    // Verificar se é um arquivo válido
+                    if (!importedData.points || !Array.isArray(importedData.points)) {
+                        alert('Arquivo inválido. Por favor, selecione um arquivo JSON válido da I.');
+                        return;
+                    }
+                    
+                    // Preparar dados para mesclagem
+                    pendingMergeData = importedData;
+                    showMergeModal(importedData);
+                    
+                } catch (error) {
+                    alert('Erro ao importar arquivo. Verifique se o arquivo é um JSON válido.');
+                    console.error('Erro na importação:', error);
+                }
+            };
+            
+            reader.readAsText(file);
+            event.target.value = ''; // Limpar input
+        }
+
+        // Mostrar modal de mesclagem
+        function showMergeModal(importedData) {
+            const modal = document.getElementById('mergeModal');
+            const content = document.getElementById('mergeContent');
+            
+            const deviceConflict = importedData.deviceId === samplingData.deviceId;
+            const hasLocalData = samplingData.points.length > 0;
+            
+            content.innerHTML = `
+                <div class="mb-4">
+                    <h4 class="font-semibold text-gray-800 mb-2">Dados a serem importados:</h4>
+                    <div class="bg-blue-50 p-3 rounded">
+                        <p><strong>Dispositivo:</strong> ${importedData.deviceId || 'Não identificado'}</p>
+                        <p><strong>Pontos:</strong> ${importedData.points.length}</p>
+                        <p><strong>Última modificação:</strong> ${new Date(importedData.metadata?.lastModified || importedData.exportDate).toLocaleString()}</p>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h4 class="font-semibold text-gray-800 mb-2">Dados locais atuais:</h4>
+                    <div class="bg-gray-50 p-3 rounded">
+                        <p><strong>Dispositivo:</strong> ${samplingData.deviceId}</p>
+                        <p><strong>Pontos:</strong> ${samplingData.points.length}</p>
+                        <p><strong>Última modificação:</strong> ${samplingData.metadata?.lastModified ? new Date(samplingData.metadata.lastModified).toLocaleString() : 'Não disponível'}</p>
+                    </div>
+                </div>
+                
+                ${deviceConflict ? `
+                    <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                        <p class="text-yellow-800"><strong>⚠️ Atenção:</strong> Os dados são do mesmo dispositivo. Pontos duplicados serão identificados e podem ser mesclados.</p>
+                    </div>
+                ` : ''}
+                
+                <div class="mb-4">
+                    <h4 class="font-semibold text-gray-800 mb-2">Opções de mesclagem:</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="radio" name="mergeOption" value="append" checked class="mr-2">
+                            <span>Adicionar aos dados existentes (recomendado)</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="mergeOption" value="replace" class="mr-2">
+                            <span>Substituir todos os dados locais</span>
+                        </label>
+                        ${hasLocalData ? `
+                            <label class="flex items-center">
+                                <input type="radio" name="mergeOption" value="merge" class="mr-2">
+                                <span>Mesclar inteligentemente (evitar duplicatas)</span>
+                            </label>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'flex';
+        }
+
+        // Fechar modal de mesclagem
+        function closeMergeModal() {
+            document.getElementById('mergeModal').style.display = 'none';
+            pendingMergeData = null;
+        }
+
+        // Confirmar mesclagem
+        function confirmMerge() {
+            if (!pendingMergeData) return;
+            
+            const mergeOption = document.querySelector('input[name="mergeOption"]:checked').value;
+            
+            switch(mergeOption) {
+                case 'append':
+                    // Adicionar pontos importados aos existentes
+                    pendingMergeData.points.forEach(point => {
+                        point.dataSource = 'imported';
+                        samplingData.points.push(point);
+                    });
+                    break;
+                    
+                case 'replace':
+                    // Substituir todos os dados
+                    samplingData = {
+                        ...pendingMergeData,
+                        deviceId: samplingData.deviceId // Manter deviceId local
+                    };
+                    break;
+                    
+                case 'merge':
+                    // Mesclagem inteligente
+                    const existingPoints = new Set(samplingData.points.map(p => 
+                        `${p.pointNumber}_${p.timestamp}_${p.deviceId}`
+                    ));
+                    
+                    pendingMergeData.points.forEach(point => {
+                        const pointKey = `${point.pointNumber}_${point.timestamp}_${point.deviceId}`;
+                        if (!existingPoints.has(pointKey)) {
+                            point.dataSource = 'merged';
+                            samplingData.points.push(point);
+                        }
+                    });
+                    break;
+            }
+            
+            // Atualizar metadados
+            samplingData.metadata.lastModified = new Date().toISOString();
+            
+            // Salvar e atualizar interface
+            saveData();
+            updateLocalPointsCount();
+            closeMergeModal();
+            showSyncIndicator('success');
+            
+            alert(`Dados importados com sucesso! ${samplingData.points.length} pontos no total.`);
+        }
+
+// Substitua a sua função `generateConsolidatedReport` por esta versão corrigida:
+async function generateConsolidatedReport() {
+    if (samplingData.points.length === 0) {
+        alert('Nenhum dado disponível para enviar para análise.');
+        return;
+    }
+
+    showSyncIndicator('pending');
+
+    try {
+        // 🔧 Correção: agora envia para o endpoint correto /analisar
+        const response = await fetch(`${serverUrl}/analisar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(samplingData.points),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erro do servidor: ${response.status} ${response.statusText}`);
+        }
+
+        const result = await response.json();
+
+        // O backend retorna { texto: resposta } → ajustado aqui:
+        if (result.erro) {
+            showSyncIndicator('error');
+            alert('Erro na análise: ' + result.erro);
+            return;
+        }
+
+        showSyncIndicator('success');
+        // Mostra o texto retornado pelo Gemini no modal
+        showGeminiReportModal(result.texto);
+
+    } catch (error) {
+        showSyncIndicator('error');
+        console.error('Erro ao chamar o servidor:', error);
+        alert('Ocorreu um erro ao conectar com o servidor. Verifique se ele está rodando.');
+    }
+}
+
+
+function showGeminiReportModal(analysisText) {
+  const modal = document.getElementById('reportModal');
+  const content = document.getElementById('reportContent');
+
+  // Remove caracteres de Markdown e símbolos especiais
+  let cleanText = analysisText
+    .replace(/\*\*/g, '')        // remove **
+    .replace(/\*/g, '')          // remove *
+    .replace(/#/g, '')           // remove #
+    .replace(/`/g, '')           // remove `
+    .replace(/\|/g, '')          // remove |
+    .replace(/_{1,2}/g, '')      // remove _
+    .replace(/:{1,}[-:]{2,}:{0,}/g, '') // remove linhas tipo ':---:' de tabelas markdown
+    .replace(/\n{3,}/g, '\n\n')  // limita quebras de linha excessivas
+    .trim();
+
+  // Deixa o texto visualmente organizado
+  cleanText = cleanText
+    .replace(/\n\d+\.\s/g, '<br><b>$&</b>') // numeração destacada
+    .replace(/\n-\s/g, '<br>• ')            // marcadores
+    .replace(/\n/g, '<br>');                // quebra de linha para HTML
+
+  // Exibe o conteúdo formatado dentro do modal
+  content.innerHTML = `
+    <div class="bg-white p-10 rounded-2xl shadow-lg text-gray-800 leading-relaxed tracking-wide">
+      <h2 class="text-3xl font-bold text-gray-900 border-b pb-2 mb-6 text-center">
+        Relatório Consolidado
+      </h2>
+      <div class="text-justify text-gray-800 whitespace-pre-line indent-8">
+        ${cleanText}
+      </div>
+    </div>
+  `;
+
+  // Mostra o modal
+  modal.style.display = 'flex';
+}
+
+
+        // Sincronizar com nuvem (simulado)
+        function syncWithCloud() {
+            showSyncIndicator('pending');
+            
+            // Simular sincronização
+            setTimeout(() => {
+                // Aqui seria implementada a sincronização real com um servidor
+                showSyncIndicator('success');
+                alert('Funcionalidade de sincronização com nuvem será implementada em versão futura.');
+            }, 2000);
+        }
+
+        // Limpar dados
+        function clearData() {
+            if (confirm('Tem certeza que deseja limpar todos os dados? Esta ação não pode ser desfeita.')) {
+                localStorage.removeItem('mipSojaDataSemImagens');
+                location.reload();
+            }
+        }
+    </script>
+
+<!-- Biblioteca única e estável -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('reportModal');
+  const closeBtn = document.getElementById('closeReportBtn');
+  const exportBtn = document.getElementById('exportReportBtn');
+  const reportContent = document.getElementById('reportContent');
+
+  // === Fechar o modal ===
+  closeBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  // === Exportar relatório em PDF (sem duplicar e com renderização real) ===
+  exportBtn.addEventListener('click', async () => {
+    if (!reportContent || reportContent.innerText.trim() === '') {
+      alert('⚠️ Nenhum relatório disponível para exportar.');
+      return;
+    }
+
+    // Clona o conteúdo (mantendo o estilo visual mesmo que o modal esteja oculto)
+    const clone = reportContent.cloneNode(true);
+    clone.style.display = 'block';
+    clone.style.visibility = 'visible';
+    clone.style.backgroundColor = '#ffffff';
+    clone.style.padding = '20px';
+    clone.style.fontFamily = 'Arial, sans-serif';
+    clone.style.color = '#222';
+    clone.style.width = '210mm'; // largura A4
+    clone.style.maxWidth = '210mm';
+    clone.style.boxSizing = 'border-box';
+
+    // Cria um wrapper temporário para o PDF
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = `
+      <div style="text-align:center; font-weight:bold; font-size:20px; margin-bottom:15px;">
+        IAgro
+      </div>
+    `;
+    wrapper.appendChild(clone);
+    wrapper.innerHTML += `
+      <div style="text-align:center; font-size:12px; margin-top:20px;">
+        Gerado em: ${new Date().toLocaleDateString('pt-BR')}
+      </div>
+    `;
+
+    document.body.appendChild(wrapper); // adiciona temporariamente ao DOM
+
+    // Opções do PDF
+    const opt = {
+      margin: [10, 10, 10, 10],
+      filename: `Relatorio_MIP_${new Date().toISOString().slice(0,10)}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'p' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    try {
+      await html2pdf().set(opt).from(wrapper).save();
+      alert('✅ Relatório exportado com sucesso!');
+    } catch (err) {
+      console.error('Erro ao gerar PDF:', err);
+      alert('❌ Ocorreu um erro ao gerar o PDF.');
+    } finally {
+      wrapper.remove(); // limpa o elemento temporário
+    }
+  });
+});
+</script>
+
