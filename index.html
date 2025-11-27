@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IAgro - Versão Sem Imagens</title>
+    <title>IAgro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
 	
@@ -2028,9 +2028,11 @@ function showGeminiReportModal(analysisText) {
                 location.reload();
             }
         }
-
-
     </script>
+
+<!-- Biblioteca única e estável -->
+<!-- Biblioteca única e estável -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -2039,31 +2041,88 @@ document.addEventListener('DOMContentLoaded', () => {
   const exportBtn = document.getElementById('exportReportBtn');
   const reportContent = document.getElementById('reportContent');
 
-  // === Fechar modal ===
+  // === Fechar o modal ===
   closeBtn.addEventListener('click', () => {
     modal.style.display = 'none';
   });
 
-  // === Exportar relatório em TXT ===
-  exportBtn.addEventListener('click', () => {
+  // === Exportar relatório em PDF (versão final sem cortes e centralizada) ===
+  exportBtn.addEventListener('click', async () => {
     if (!reportContent || reportContent.innerText.trim() === '') {
-        alert('⚠️ Nenhum relatório disponível para exportar.');
-        return;
+      alert('⚠️ Nenhum relatório disponível para exportar.');
+      return;
     }
 
-    // Texto do relatório
-    const text = reportContent.innerText;
+    // Clona o conteúdo para não interferir no modal
+    const clone = reportContent.cloneNode(true);
 
-    // Cria o arquivo TXT
-    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    // Cria uma área limpa e formatada para gerar o PDF
+    const wrapper = document.createElement('div');
+    wrapper.style.width = '190mm';          // largura útil da página A4
+    wrapper.style.minHeight = '277mm';      // altura mínima
+    wrapper.style.margin = '0 auto';
+    wrapper.style.padding = '20mm 15mm';    // margens internas
+    wrapper.style.backgroundColor = '#ffffff';
+    wrapper.style.fontFamily = 'Calibri, Arial, sans-serif';
+    wrapper.style.lineHeight = '1.6';
+    wrapper.style.fontSize = '12pt';
+    wrapper.style.color = '#222';
+    wrapper.style.textAlign = 'justify';
+    wrapper.style.boxSizing = 'border-box';
 
-    // Baixar arquivo
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `Relatorio_MIP_${new Date().toISOString().slice(0,10)}.txt`;
-    link.click();
+    // Cabeçalho e conteúdo
+    wrapper.innerHTML = `
+      <div style="text-align:center; margin-bottom:15mm;">
+        <h1 style="margin:0; font-size:22pt; font-weight:bold; color:#003366;">IAgro</h1>
+        <h2 style="margin:6pt 0 0; font-size:14pt; font-weight:normal;">Relatório Consolidado</h2>
+        <hr style="margin-top:8mm; border:0; border-top:1px solid #ccc; width:85%;">
+      </div>
+
+      <div style="padding:0 5mm;">
+        ${clone.innerHTML}
+      </div>
+
+      <hr style="margin-top:12mm; border:0; border-top:1px solid #ccc; width:85%;">
+      <div style="text-align:center; font-size:10pt; margin-top:6mm; color:#555;">
+        Gerado automaticamente em ${new Date().toLocaleDateString('pt-BR')}
+      </div>
+    `;
+
+    document.body.appendChild(wrapper);
+
+    // Opções otimizadas para centralização e margens reais
+    const opt = {
+      margin: [10, 10, 10, 10], // margens fixas
+      filename: `Relatorio_MIP_${new Date().toISOString().slice(0,10)}.pdf`,
+      image: { type: 'jpeg', quality: 1 },
+      html2canvas: {
+        scale: 1.4,               // escala equilibrada (evita corte)
+        useCORS: true,
+        scrollY: 0,
+        backgroundColor: '#ffffff',
+        windowWidth: 850,         // largura A4 ajustada
+        windowHeight: 1200        // altura proporcional
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: {
+        mode: ['avoid-all', 'css', 'legacy'],
+        before: ['#page-break', '.page-break'],
+        avoid: ['h2', 'h3', 'img']
+      }
+    };
+
+    try {
+      await html2pdf().set(opt).from(wrapper).save();
+      alert('✅ Relatório exportado com margens perfeitas e sem cortes!');
+    } catch (err) {
+      console.error('Erro ao gerar PDF:', err);
+      alert('❌ Ocorreu um erro ao gerar o PDF.');
+    } finally {
+      document.body.removeChild(wrapper);
+    }
   });
-
 });
 </script>
+
+
 
